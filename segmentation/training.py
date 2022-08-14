@@ -66,6 +66,7 @@ def train(model, instance_clustering, train_loader, test_loader, epochs):
     accuracies = {'train': [], 'test': []}
 
     for epoch in range(epochs):
+        optimizer.step()
         scheduler.step()
 
         if epoch % scheduler.step_size == 0:
@@ -108,7 +109,6 @@ def train(model, instance_clustering, train_loader, test_loader, epochs):
                 accuracy = correct_prediction.int().sum().item() / np.prod(predicted_class.shape)
 
             loss.backward()
-            optimizer.step()
 
             # losses['train']['semantic'].append(semantic_loss.item())
             # losses['train']['instance'].append(instance_loss.item())
