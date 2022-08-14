@@ -81,7 +81,7 @@ class SemanticSegmentationDataset(data.Dataset):
     def __len__(self):
         return self.train_size if self.train else self.test_size
 
-    def process_raw_image_files(self, folder_path, f_train, f_test, extension='*.JPG'):
+    def process_raw_image_files(self, folder_path, f_train, f_test, extension='*.png'):
         train_set = f_train.create_dataset('images', (self.train_size, self.height, self.width, 3), dtype=np.float32)
         test_set = f_test.create_dataset('images', (self.test_size, self.height, self.width, 3), dtype=np.float32)
         images = (Image.open(filename) for filename in sorted(folder_path.glob(extension)))
@@ -144,6 +144,8 @@ class CamVid(SemanticSegmentationDataset):
         self.height = 720
         self.width = 960
 
+
+
     def process_label_image_files(self, folder_path, colours, f_train, f_test):
         train_set = f_train.create_dataset('labels', (self.train_size, self.height, self.width), dtype=np.int64)
         test_set = f_test.create_dataset('labels', (self.test_size, self.height, self.width), dtype=np.int64)
@@ -189,6 +191,7 @@ class CamVid(SemanticSegmentationDataset):
         with open(self.processed_folder / 'label_colors.txt', 'wb') as class_list:
             class_list.write(data.read())
 
+    def process_downloaded_images(self):
         # process and save as torch files
         print('Processing...')
 
@@ -296,7 +299,7 @@ class Slides(SemanticSegmentationDataset):
         print(f'Copying images')
 
         (self.raw_folder / 'images').mkdir(exist_ok=True)
-        for filename in sorted(folder.glob('*.JPG')):
+        for filename in sorted(folder.glob('*.png')):
             shutil.copy(filename, self.raw_folder / 'images' / filename.name)
 
         print(f'Copying labels')
@@ -323,7 +326,7 @@ class Slides(SemanticSegmentationDataset):
         self.class_to_idx, self.colours = self.read_label_file(self.processed_folder / 'label_colors.txt')
 
         with h5py.File(self.training_file, 'w') as f_train, h5py.File(self.test_file, 'w') as f_test:
-            self.process_raw_image_files(self.raw_folder / 'images', f_train, f_test, extension='*.JPG')
+            self.process_raw_image_files(self.raw_folder / 'images', f_train, f_test, extension='*.png')
             self.process_label_image_files(self.raw_folder / 'labels', self.colours, f_train, f_test)
             self.process_instance_image_files(self.raw_folder / 'instances', f_train, f_test)
         print('Done!')
@@ -331,7 +334,7 @@ class Slides(SemanticSegmentationDataset):
 
 class ImageFolder(data.Dataset):
     def __init__(self, root, transform=identity):
-        self.samples = list(Path(root).glob('*.JPG'))
+        self.samples = list(Path(root).glob('*.png'))
 
         self.transform = transform
 
